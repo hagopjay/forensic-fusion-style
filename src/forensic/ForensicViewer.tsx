@@ -556,3 +556,173 @@ function DamagesPanel() {
     </div>
   );
 }
+
+// ────────────────────────────────────────────────────────────
+//  LIVE SENSOR STRIP — viewport bottom telemetry bar
+// ────────────────────────────────────────────────────────────
+type StreamPt = { t: number; spores: number; temp: number; wme: number; junc: number };
+
+function LiveSensorStrip({ stream }: { stream: StreamPt[] }) {
+  const last = stream[stream.length - 1];
+  const channels: { id: string; label: string; unit: string; color: string; key: keyof StreamPt; fmt: (n: number) => string; threshold: number; thresholdLbl: string; alert: boolean }[] = [
+    { id: 'mold', label: 'Mold · MOLD-001', unit: 'spores/m³', color: '#22c55e', key: 'spores', fmt: (n) => Math.round(n).toLocaleString(), threshold: 10000, thresholdLbl: '10k', alert: last.spores > 10000 },
+    { id: 'hvac', label: 'HVAC · HVAC-001', unit: '°F', color: '#f59e0b', key: 'temp', fmt: (n) => n.toFixed(1), threshold: 70, thresholdLbl: '70°F', alert: last.temp < 70 },
+    { id: 'water', label: 'Water · WATER-001', unit: '% WME', color: '#4b8df8', key: 'wme', fmt: (n) => n.toFixed(1), threshold: 19, thresholdLbl: '19%', alert: last.wme > 19 },
+    { id: 'elec', label: 'Junction · ELEC-001', unit: '°F', color: '#fb7185', key: 'junc', fmt: (n) => n.toFixed(0), threshold: 90, thresholdLbl: '90°F', alert: last.junc > 90 },
+  ];
+  return (
+    <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-10 panel rounded-md px-3 py-2 flex items-stretch gap-3 min-w-[640px]">
+      <div className="flex flex-col justify-center pr-3 border-r border-border/60">
+        <div className="font-mono-ui text-[8px] uppercase tracking-[0.2em] text-primary/80 flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-sev-ok pulse-dot" /> LIVE TELEMETRY
+        </div>
+        <div className="font-mono-ui text-[8px] tracking-[0.1em] text-muted-foreground/70 mt-0.5">4 active sensors · 1.2 Hz</div>
+      </div>
+      {channels.map((c) => (
+        <div key={c.id} className="flex flex-col min-w-[124px]">
+          <div className="flex items-baseline justify-between">
+            <span className="font-mono-ui text-[8px] tracking-[0.08em] uppercase" style={{ color: c.color }}>{c.label}</span>
+            <span className={`font-mono-ui text-[7px] tracking-[0.1em] uppercase ${c.alert ? 'text-sev-critical' : 'text-sev-ok'}`}>
+              {c.alert ? '▲ EXCEED' : '○ NOM'}
+            </span>
+          </div>
+          <div className="flex items-baseline gap-1">
+            <span className="font-display text-[14px] font-bold tabular-nums" style={{ color: c.color }}>{c.fmt(last[c.key] as number)}</span>
+            <span className="font-mono-ui text-[8px] text-muted-foreground/60">{c.unit}</span>
+            <span className="font-mono-ui text-[7px] text-muted-foreground/50 ml-auto">thr {c.thresholdLbl}</span>
+          </div>
+          <div className="h-7 -mt-0.5">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={stream} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
+                <defs>
+                  <linearGradient id={`g-${c.id}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={c.color} stopOpacity={0.6} />
+                    <stop offset="100%" stopColor={c.color} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <Area type="monotone" dataKey={c.key as string} stroke={c.color} strokeWidth={1.2} fill={`url(#g-${c.id})`} isAnimationActive={false} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+//  ANALYTICS PANEL — pie + bars + radial infographics
+// ────────────────────────────────────────────────────────────
+function AnalyticsPanel() {
+  const sevData = (['si', 'sm', 'ss'] as const).map((s) => ({
+    name: s === 'si' ? 'Imminent' : s === 'sm' ? 'Material' : 'Significant',
+    value: DEFECTS.filter((d) => d.sevCls === s).length,
+    color: s === 'si' ? '#dc4f35' : s === 'sm' ? '#f59e0b' : '#facc15',
+  }));
+  const dmgData = DEFECTS.map((d) => ({
+    id: d.id.split('-')[0],
+    dmg: Number(d.dmg.replace(/[^0-9.]/g, '')) || 0,
+    color: d.color,
+  })).sort((a, b) => b.dmg - a.dmg);
+  const gapMax = Math.max(...DEFECTS.map((d) => d.gap));
+
+  return (
+    <div className="px-4 py-4 space-y-5">
+      {/* KPIs */}
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          { lbl: 'Defects', v: DEFECTS.length.toString(), c: 'text-primary' },
+          { lbl: 'Hazards', v: HAZARD_COUNT.toString(), c: 'text-sev-critical' },
+          { lbl: 'Contradict.', v: DEFECTS.filter((d) => d.contra).length.toString(), c: 'text-sev-high' },
+        ].map((k) => (
+          <div key={k.lbl} className="rounded-md panel px-2.5 py-2 text-center">
+            <div className={`font-display text-[20px] font-bold leading-none ${k.c}`}>{k.v}</div>
+            <div className="font-mono-ui text-[7px] uppercase tracking-[0.16em] text-muted-foreground/70 mt-1">{k.lbl}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Severity donut */}
+      <div>
+        <div className="font-mono-ui text-[8px] uppercase tracking-[0.18em] text-muted-foreground/70 mb-2">Severity Distribution</div>
+        <div className="flex items-center gap-3">
+          <div className="w-[110px] h-[110px] relative">
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie data={sevData} dataKey="value" innerRadius={32} outerRadius={50} paddingAngle={3} stroke="none">
+                  {sevData.map((d) => <Cell key={d.name} fill={d.color} />)}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="absolute inset-0 grid place-items-center pointer-events-none">
+              <div className="text-center">
+                <div className="font-display text-[16px] font-bold gold-text leading-none">{DEFECTS.length}</div>
+                <div className="font-mono-ui text-[6px] uppercase tracking-[0.16em] text-muted-foreground/70">Total</div>
+              </div>
+            </div>
+          </div>
+          <div className="flex-1 space-y-1.5">
+            {sevData.map((d) => (
+              <div key={d.name} className="flex items-center gap-2 text-[10px]">
+                <span className="h-2 w-2 rounded-sm" style={{ background: d.color, boxShadow: `0 0 6px ${d.color}` }} />
+                <span className="text-foreground/80">{d.name}</span>
+                <span className="ml-auto font-mono-ui font-bold" style={{ color: d.color }}>{d.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Damages bar */}
+      <div>
+        <div className="font-mono-ui text-[8px] uppercase tracking-[0.18em] text-muted-foreground/70 mb-2">Damages by Defect ($K)</div>
+        <div className="h-[130px]">
+          <ResponsiveContainer>
+            <BarChart data={dmgData} margin={{ top: 4, right: 6, bottom: 0, left: -18 }}>
+              <XAxis dataKey="id" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 9, fontFamily: 'var(--font-mono)' }} axisLine={{ stroke: 'hsl(var(--border))' }} tickLine={false} />
+              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 8 }} axisLine={false} tickLine={false} tickFormatter={(v) => Math.round(v / 1000) + 'k'} />
+              <Tooltip
+                contentStyle={{ background: 'hsl(var(--surface-1))', border: '1px solid hsl(var(--border))', fontSize: 10 }}
+                formatter={(v: number) => '$' + v.toLocaleString()}
+              />
+              <Bar dataKey="dmg" radius={[3, 3, 0, 0]}>
+                {dmgData.map((d) => <Cell key={d.id} fill={d.color} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Notice-gap radial bars */}
+      <div>
+        <div className="font-mono-ui text-[8px] uppercase tracking-[0.18em] text-muted-foreground/70 mb-2">Notice Gap (days unremediated)</div>
+        <div className="space-y-1.5">
+          {DEFECTS.map((d) => {
+            const pct = (d.gap / gapMax) * 100;
+            return (
+              <div key={d.id} className="flex items-center gap-2 text-[9px]">
+                <span className="font-mono-ui w-[72px] truncate" style={{ color: d.color }}>{d.id}</span>
+                <div className="relative flex-1 h-2.5 rounded-sm bg-surface-2 overflow-hidden">
+                  <div className="h-full rounded-sm" style={{ width: pct + '%', background: `linear-gradient(90deg, ${d.color}40, ${d.color})`, boxShadow: `0 0 8px ${d.color}80` }} />
+                </div>
+                <span className="font-mono-ui w-9 text-right text-foreground/80">{d.gap}d</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Code violation summary chips */}
+      <div>
+        <div className="font-mono-ui text-[8px] uppercase tracking-[0.18em] text-muted-foreground/70 mb-2">Code Spectrum</div>
+        <div className="flex flex-wrap gap-1">
+          {['CA H&S §17920.3', 'CA Civ. §1941.1', '40 CFR Part 745', '42 U.S.C. §4852d', '40 CFR Part 61', 'NEC §394.30', 'IBC §1604.3', 'Cal/OSHA §1529'].map((c) => (
+            <span key={c} className="font-mono-ui text-[8px] tracking-[0.05em] px-1.5 py-0.5 rounded-sm bg-surface-2 ring-1 ring-border/60 text-foreground/70">
+              {c}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
