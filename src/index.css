@@ -8,35 +8,61 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Forensic Intelligence — deep navy console */
+    --background: 220 60% 3%;
+    --foreground: 210 30% 78%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --surface-0: 220 55% 4%;
+    --surface-1: 218 50% 6%;
+    --surface-2: 216 45% 9%;
+    --surface-3: 214 40% 13%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --card: 218 50% 5%;
+    --card-foreground: 210 30% 80%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --popover: 220 55% 5%;
+    --popover-foreground: 210 30% 85%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Brand: forensic gold + arctic cyan */
+    --primary: 42 95% 52%;
+    --primary-foreground: 220 60% 4%;
+    --primary-glow: 42 100% 65%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 192 95% 55%;
+    --accent-foreground: 220 60% 4%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --secondary: 218 40% 12%;
+    --secondary-foreground: 210 30% 82%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --muted: 218 35% 10%;
+    --muted-foreground: 212 18% 48%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --destructive: 358 75% 55%;
+    --destructive-foreground: 0 0% 100%;
 
-    --radius: 0.5rem;
+    /* Severity palette (HSL) */
+    --sev-critical: 358 78% 56%;
+    --sev-high: 18 88% 52%;
+    --sev-medium: 38 92% 52%;
+    --sev-info: 192 90% 56%;
+    --sev-ok: 145 65% 48%;
+
+    --border: 215 40% 14%;
+    --input: 215 40% 14%;
+    --ring: 42 95% 52%;
+
+    --radius: 0.4rem;
+
+    /* Gradients & shadows */
+    --grad-gold: linear-gradient(135deg, hsl(42 95% 52%), hsl(32 95% 48%));
+    --grad-panel: linear-gradient(180deg, hsl(218 50% 6% / 0.95), hsl(220 55% 4% / 0.98));
+    --grad-vignette: radial-gradient(ellipse at center, transparent 40%, hsl(220 70% 2% / 0.85) 100%);
+    --shadow-glow: 0 0 24px hsl(42 95% 52% / 0.35), 0 0 60px hsl(42 95% 52% / 0.15);
+    --shadow-panel: 0 8px 28px hsl(220 80% 0% / 0.6), 0 1px 0 hsl(210 50% 30% / 0.05) inset;
+
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-display: 'Space Grotesk', 'Inter', sans-serif;
 
     --sidebar-background: 0 0% 98%;
 
@@ -54,44 +80,6 @@ All colors MUST be HSL.
 
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
 }
 
 @layer base {
@@ -101,5 +89,78 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  html, body, #root { height: 100%; }
+}
+
+@layer utilities {
+  .font-mono-ui { font-family: var(--font-mono); }
+  .font-display { font-family: var(--font-display); letter-spacing: 0.02em; }
+
+  .panel {
+    background: var(--grad-panel);
+    border: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-panel);
+    backdrop-filter: blur(10px);
+  }
+
+  .glass {
+    background: hsl(var(--surface-1) / 0.78);
+    border: 1px solid hsl(var(--border));
+    backdrop-filter: blur(10px);
+  }
+
+  .gold-text {
+    background: var(--grad-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .scanlines::before {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(0deg,
+      hsl(210 50% 80% / 0.018) 0 1px,
+      transparent 1px 3px);
+    mix-blend-mode: overlay;
+    z-index: 5;
+  }
+
+  .vignette::after {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none;
+    background: var(--grad-vignette);
+    z-index: 4;
+  }
+
+  .grid-bg {
+    background-image:
+      linear-gradient(hsl(210 60% 40% / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(210 60% 40% / 0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: hsl(var(--surface-3)); border-radius: 3px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: hsl(var(--primary) / 0.4); }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.5); }
+    50% { box-shadow: 0 0 0 6px hsl(var(--primary) / 0); }
+  }
+  .pulse-dot { animation: pulse-glow 2s ease-out infinite; }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .shimmer {
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.3), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
   }
 }
