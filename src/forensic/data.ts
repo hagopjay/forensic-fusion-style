@@ -165,6 +165,56 @@ export const DEFECTS: Defect[] = [
       { tp: 'FED', id: 'FED-4852D', bates: 'PLNT000090', desc: 'Federal violation analysis — 42 U.S.C. §4852d treble damages', c: '#dc4f35' },
     ],
   },
+  {
+    id: 'ASBE-001', bates: 'PLNT000412–428', color: '#a78bfa', hex: 0xa78bfa,
+    typeLbl: 'Asbestos — friable thermal pipe insulation (utility chase)', sev: 'IMMINENT HAZARD', sevCls: 'si',
+    room: 'Utility chase (central) · disturbed during failed Dec 2023 repair', code: '40 CFR Part 61 Subpart M · Cal/OSHA §1529',
+    threshold: '0.1 f/cc (PEL · 8-hr TWA)', found: '0.42 f/cc — 4.2× PEL · friable chrysotile', area: '11 linear ft of pipe wrap',
+    pos: [0.6, 2.55, -0.2], gap: 89, reported: '2023-12-18', status: 'UNREMEDIATED · ACCESS RESTRICTED',
+    lab: 'PLM analysis: 18% chrysotile asbestos in friable pipe-wrap insulation. Air sample post-disturbance: 0.42 f/cc (8× background). Disturbance event during HVAC repair attempt Dec 4, 2023 — performed without abatement protocols. Building age 1962 — pre-ban material consistent.',
+    narr: 'Chrysotile asbestos disturbed by unlicensed contractor during failed HVAC repair. No NESHAP notification filed. Air monitoring confirms ongoing fiber release into return-air plenum serving all habitable rooms. Federal abatement required.',
+    contra: '⚑ CONTRADICTION: Contractor invoice (DFND000388) describes work as "minor pipe insulation replacement" — no mention of suspect ACM. NESHAP 10-day pre-notification (40 CFR §61.145) was never filed. Strict-liability federal violation.',
+    pun: 'CRITICAL', punCls: 'pc', punTxt: 'Strict-liability federal NESHAP violation + return-air contamination + minor in unit = CRITICAL exposure. EPA penalties up to $109,024/day per violation.',
+    dmg: '$640,000',
+    chain: [
+      { date: '2023-12-04', type: 'fail', lbl: 'Disturbance event — HVAC contractor cuts pipe wrap', c: '#dc4f35' },
+      { date: '2023-12-18', type: 'noticed', lbl: 'Tenant notices white fiber dust on HVAC vents', c: '#22c55e' },
+      { date: '2023-12-19', type: 'notice', lbl: 'Written notice + lab request to PM', c: '#4b8df8' },
+      { type: 'gap', lbl: 'NO ABATEMENT · NO NESHAP FILING — 89 DAYS', c: '#dc4f35' },
+      { date: '2024-03-15', type: 'inspect', lbl: 'PLM + air monitoring confirms friable chrysotile', c: '#8b5cf6' },
+    ],
+    evidence: [
+      { tp: 'PLM', id: 'PLM-2024-0315-04', bates: 'PLNT000412–417', desc: 'Polarized light microscopy — 18% chrysotile confirmed', c: '#a78bfa' },
+      { tp: 'AIR', id: 'AIR-2024-0315-02', bates: 'PLNT000418–422', desc: 'Air monitoring — 0.42 f/cc (4.2× PEL)', c: '#a78bfa' },
+      { tp: 'INV', id: 'INV-CNTR-2023-12', bates: 'DFND000388', desc: '⚑ Contractor invoice — no ACM disclosure (NESHAP violation)', c: '#dc4f35' },
+      { tp: 'FED', id: 'FED-NESHAP', bates: 'PLNT000423–428', desc: 'Federal NESHAP §61.145 non-notification analysis', c: '#dc4f35' },
+    ],
+  },
+  {
+    id: 'ELEC-001', bates: 'PLNT000501–518', color: '#fb7185', hex: 0xfb7185,
+    typeLbl: 'Electrical — knob-and-tube splices in concealed kitchen ceiling', sev: 'SIGNIFICANT', sevCls: 'ss',
+    room: 'Kitchen (SE) — concealed ceiling junction · adjacent to lead paint zone', code: 'NEC §394.12 · CA Elec. Code §110.14 · CFC §605.1',
+    threshold: 'Splices forbidden in concealed locations (NEC §394.30)', found: '7 unlisted splices · scorch marks · 142°F at junction', area: '4 sq ft of ceiling cavity',
+    pos: [3.5, 2.85, 1.2], gap: 54, reported: '2024-01-21', status: 'UNREMEDIATED · ACTIVE FIRE RISK',
+    lab: 'Thermographic survey: junction box reads 142°F under 60% rated load. 7 unlisted splices (wire-nut + tape) in concealed location — prohibited by NEC §394.30(B). Scorch marks on adjacent joist. Estimated ignition probability under sustained load: elevated.',
+    narr: 'Concealed knob-and-tube splices in kitchen ceiling cavity show active heat signature and char. Modern circuit loads (microwave + dishwasher) exceed safe capacity. Fire-marshal-grade hazard directly above lead-paint deteriorating zone.',
+    contra: null,
+    pun: 'MEDIUM', punCls: 'pm', punTxt: 'Active fire risk + scorch evidence + 54-day non-response = constructive knowledge of imminent ignition risk.',
+    dmg: '$155,000',
+    chain: [
+      { date: '2024-01-19', type: 'noticed', lbl: 'Tenant reports flickering + burning odor', c: '#22c55e' },
+      { date: '2024-01-21', type: 'notice', lbl: 'Written notice w/ photos to PM', c: '#4b8df8' },
+      { date: '2024-01-25', type: 'response', lbl: 'PM: "scheduling electrician" — no follow-up', c: '#f59e0b' },
+      { type: 'gap', lbl: 'NO ELECTRICIAN DISPATCHED — 54 DAYS', c: '#dc4f35' },
+      { date: '2024-03-15', type: 'inspect', lbl: 'IR thermography confirms 142°F at concealed junction', c: '#8b5cf6' },
+    ],
+    evidence: [
+      { tp: 'IRT', id: 'IRT-2024-0315-07', bates: 'PLNT000501–506', desc: 'IR thermography — 142°F at concealed junction', c: '#fb7185' },
+      { tp: 'PHO', id: 'PHO-2024-0315-62', bates: 'PLNT000507–512', desc: 'Borescope photos — scorch marks + 7 unlisted splices', c: '#4b8df8' },
+      { tp: 'EML', id: 'EML-2024-0125', bates: 'DFND000522', desc: 'PM email: "scheduling electrician" — no follow-up', c: '#f59e0b' },
+      { tp: 'STR', id: 'STR-NEC-394', bates: 'PLNT000513–518', desc: 'NEC §394.30 / CA Elec. Code §110.14 violation memo', c: '#dc4f35' },
+    ],
+  },
 ];
 
 export const TYPE_COLORS: Record<string, string> = {
@@ -172,4 +222,5 @@ export const TYPE_COLORS: Record<string, string> = {
   LOG: '#dc4f35', RDR: '#4b8df8', BOR: '#22c55e', INV: '#8b5cf6',
   STR: '#dc4f35', XRF: '#e060a0', DIS: '#dc4f35', MED: '#e060a0',
   BLD: '#8b5cf6', FED: '#dc4f35', SUB: '#8b5cf6',
+  PLM: '#a78bfa', AIR: '#a78bfa', IRT: '#fb7185',
 };
