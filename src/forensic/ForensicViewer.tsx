@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DEFECTS, TYPE_COLORS, type Defect } from './data';
 import { useForensicScene, type LayerKey, type ViewMode } from './useForensicScene';
+import { Area, AreaChart, Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import forensicSeal from '@/assets/forensic-seal.png';
+import confidentialStamp from '@/assets/evidence-stamp.png';
+
+const TOTAL_DAMAGES = DEFECTS.reduce((acc, d) => acc + Number(d.dmg.replace(/[^0-9.]/g, '')) || 0, 0);
+const TOTAL_DAMAGES_FMT = '$' + TOTAL_DAMAGES.toLocaleString() + ',500'.slice(0, 0); // displayed below
+const HAZARD_COUNT = DEFECTS.filter((d) => d.sevCls === 'si').length;
 
 const MODES: { id: ViewMode; label: string; sub: string }[] = [
   { id: '3d', label: '3D Orbit', sub: 'Perspective survey' },
@@ -20,6 +27,7 @@ const TABS = [
   { id: 'reg', label: 'Registry' },
   { id: 'det', label: 'Detail' },
   { id: 'ev', label: 'Evidence' },
+  { id: 'ana', label: 'Analytics' },
   { id: 'dam', label: 'Damages' },
 ] as const;
 
@@ -78,6 +86,30 @@ export default function ForensicViewer() {
   }, [layers, apiRef]);
 
   const sel = useMemo(() => DEFECTS.find((d) => d.id === selected) ?? null, [selected]);
+
+  // ── Live sensor stream (mold spores · temp · moisture · IR junction temp) ──
+  const [stream, setStream] = useState<{ t: number; spores: number; temp: number; wme: number; junc: number }[]>(() => {
+    const arr: { t: number; spores: number; temp: number; wme: number; junc: number }[] = [];
+    for (let i = 0; i < 48; i++) arr.push({ t: i, spores: 47000 + Math.sin(i / 4) * 2200, temp: 55 + Math.sin(i / 6) * 2.2, wme: 41 + Math.sin(i / 5) * 1.4, junc: 138 + Math.sin(i / 3) * 5 });
+    return arr;
+  });
+  useEffect(() => {
+    const t = setInterval(() => {
+      setStream((s) => {
+        const last = s[s.length - 1];
+        const i = last.t + 1;
+        const next = {
+          t: i,
+          spores: Math.max(35000, Math.min(60000, last.spores + (Math.random() - 0.5) * 1800)),
+          temp: Math.max(50, Math.min(62, last.temp + (Math.random() - 0.5) * 0.6)),
+          wme: Math.max(36, Math.min(46, last.wme + (Math.random() - 0.5) * 0.4)),
+          junc: Math.max(125, Math.min(155, last.junc + (Math.random() - 0.5) * 1.6)),
+        };
+        return [...s.slice(-47), next];
+      });
+    }, 1200);
+    return () => clearInterval(t);
+  }, []);
 
   return (
     <div className="flex h-screen w-screen flex-col bg-background text-foreground overflow-hidden font-sans">
@@ -165,11 +197,20 @@ export default function ForensicViewer() {
           <div ref={canvasRef} className="absolute inset-0" />
           <div ref={labelRef} className="pointer-events-none absolute inset-0 overflow-hidden z-[3]" />
 
+          {/* Watermark seal */}
+          <img
+            src={forensicSeal}
+            alt=""
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] max-w-[55%] opacity-[0.05] mix-blend-screen z-[2] select-none"
+            loading="lazy"
+          />
+
           {/* Top-left HUD */}
           <div className="pointer-events-none absolute left-4 top-4 z-10 flex flex-col gap-1.5">
             <div className="font-mono-ui text-[8px] uppercase tracking-[0.22em] text-primary/70">// {mode === 'plan' ? 'ORTHOGRAPHIC' : mode.toUpperCase()} VIEWPORT</div>
             <div className="font-display text-[15px] tracking-tight text-foreground/90">Unit 4B <span className="text-muted-foreground/60">/ Floor 4</span></div>
-            <div className="font-mono-ui text-[9px] tracking-[0.1em] text-muted-foreground/60">5 active defects · 2 imminent hazards · $2.85M claimed</div>
+            <div className="font-mono-ui text-[9px] tracking-[0.1em] text-muted-foreground/60">{DEFECTS.length} active defects · {HAZARD_COUNT} imminent hazards · ${(TOTAL_DAMAGES / 1_000_000).toFixed(2)}M claimed</div>
           </div>
 
           {/* Hover tooltip */}
@@ -239,6 +280,9 @@ export default function ForensicViewer() {
             DRAG · orbit · SCROLL · zoom · CLICK · inspect defect
           </div>
 
+          {/* Live sensor strip */}
+          <LiveSensorStrip stream={stream} />
+
           {/* Reset view */}
           <button
             onClick={() => apiRef.current?.resetView()}
@@ -249,15 +293,23 @@ export default function ForensicViewer() {
         </section>
 
         {/* Sidebar */}
-        <aside className="flex w-[360px] shrink-0 flex-col overflow-hidden border-l border-border bg-surface-0">
+        <aside className="relative flex w-[380px] shrink-0 flex-col overflow-hidden border-l border-border bg-surface-0">
+          <img
+            src={confidentialStamp}
+            alt=""
+            aria-hidden
+            className="pointer-events-none absolute -right-6 top-2 w-[200px] rotate-[8deg] opacity-[0.10] z-0 select-none"
+            loading="lazy"
+          />
+          <div className="relative z-10 flex flex-1 min-h-0 flex-col">
           {/* Case meta */}
           <div className="grid grid-cols-2 gap-x-4 gap-y-2 border-b border-border px-4 py-3">
             {[
               ['Property / Unit', '1240 Park Ave · Unit 4B · Floor 4', false],
               ['Tenancy', 'Aug 2021 — present · 32 mo', false],
               ['Occupants', 'Rodriguez · 4 · incl. minor age 4', false],
-              ['Total damages', '$2,847,500', true],
-              ['Defects', '5 · 2 imminent hazards', true],
+              ['Total damages', '$' + TOTAL_DAMAGES.toLocaleString(), true],
+              ['Defects', `${DEFECTS.length} · ${HAZARD_COUNT} imminent hazards`, true],
               ['Max notice gap', '226 days (LEAD-001)', true],
             ].map(([l, v, gold]) => (
               <div key={l as string} className="flex flex-col gap-0.5">
@@ -288,7 +340,9 @@ export default function ForensicViewer() {
             {tab === 'reg' && <RegistryPanel selected={selected} onSelect={setSelected} />}
             {tab === 'det' && (sel ? <DetailPanel d={sel} /> : <Empty>Select a defect from the Registry, or click any marker in the 3D view.</Empty>)}
             {tab === 'ev' && (sel ? <EvidencePanel d={sel} /> : <Empty>Select a defect to view its linked evidence with Bates references.</Empty>)}
+            {tab === 'ana' && <AnalyticsPanel />}
             {tab === 'dam' && <DamagesPanel />}
+          </div>
           </div>
         </aside>
       </main>
