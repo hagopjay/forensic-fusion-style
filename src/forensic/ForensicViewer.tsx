@@ -6,7 +6,6 @@ import forensicSeal from '@/assets/forensic-seal.png';
 import confidentialStamp from '@/assets/evidence-stamp.png';
 
 const TOTAL_DAMAGES = DEFECTS.reduce((acc, d) => acc + Number(d.dmg.replace(/[^0-9.]/g, '')) || 0, 0);
-const TOTAL_DAMAGES_FMT = '$' + TOTAL_DAMAGES.toLocaleString() + ',500'.slice(0, 0); // displayed below
 const HAZARD_COUNT = DEFECTS.filter((d) => d.sevCls === 'si').length;
 
 const MODES: { id: ViewMode; label: string; sub: string }[] = [
