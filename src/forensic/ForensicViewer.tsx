@@ -558,7 +558,7 @@ function DamagesPanel() {
           ))}
           <tr>
             <td colSpan={2} className="px-4 pt-4 pb-3 border-t border-primary/40 font-display text-[12px] font-bold text-primary">Total Claimed Damages</td>
-            <td className="px-4 pt-4 pb-3 text-right border-t border-primary/40 font-display text-[16px] font-bold gold-text">$2,847,500</td>
+            <td className="px-4 pt-4 pb-3 text-right border-t border-primary/40 font-display text-[16px] font-bold gold-text">${TOTAL_DAMAGES.toLocaleString()}</td>
           </tr>
         </tbody>
       </table>
