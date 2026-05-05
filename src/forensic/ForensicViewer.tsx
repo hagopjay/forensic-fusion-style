@@ -731,13 +731,132 @@ function AnalyticsPanel() {
       <div>
         <div className="font-mono-ui text-[8px] uppercase tracking-[0.18em] text-muted-foreground/70 mb-2">Code Spectrum</div>
         <div className="flex flex-wrap gap-1">
-          {['CA H&S §17920.3', 'CA Civ. §1941.1', '40 CFR Part 745', '42 U.S.C. §4852d', '40 CFR Part 61', 'NEC §394.30', 'IBC §1604.3', 'Cal/OSHA §1529'].map((c) => (
+          {['CA H&S §17920.3', 'CA Civ. §1941.1', '40 CFR Part 745', '42 U.S.C. §4852d', '40 CFR Part 61', 'NEC §394.30', 'IBC §1604.3', 'Cal/OSHA §1529', 'UPC §710.1', 'NFPA 72 §29.8', 'CRC §R314/R315'].map((c) => (
             <span key={c} className="font-mono-ui text-[8px] tracking-[0.05em] px-1.5 py-0.5 rounded-sm bg-surface-2 ring-1 ring-border/60 text-foreground/70">
               {c}
             </span>
           ))}
         </div>
       </div>
+
+      {/* Notice timeline (Gantt-style) */}
+      <div>
+        <div className="font-mono-ui text-[8px] uppercase tracking-[0.18em] text-muted-foreground/70 mb-2">Notice → Today Timeline</div>
+        <NoticeTimeline />
+      </div>
+
+      {/* Habitability radar */}
+      <div>
+        <div className="font-mono-ui text-[8px] uppercase tracking-[0.18em] text-muted-foreground/70 mb-2">Habitability Index — by Domain</div>
+        <HabitabilityRadar />
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+//  ALERTS TICKER — streaming top-of-viewport headline strip
+// ────────────────────────────────────────────────────────────
+function AlertsTicker() {
+  const items = [
+    { c: 'sev-critical', t: 'LEAD-001 · 226d unremediated · federal treble armed' },
+    { c: 'sev-critical', t: 'ASBE-001 · NESHAP §61.145 non-notification · strict liability' },
+    { c: 'sev-critical', t: 'PLMB-001 · coliform 1.4×10⁶ cfu/100 mL · Cat-3 misclassified' },
+    { c: 'sev-critical', t: 'LIFE-001 · 0/3 alarms in sleeping zones · negligence per se' },
+    { c: 'sev-high', t: 'ELEC-001 · 142°F at concealed junction · IR confirmed' },
+    { c: 'sev-high', t: 'MOLD-001 · contradicted maintenance log DFND000445' },
+    { c: 'sev-medium', t: 'PEST-001 · gnawed romex compounds ELEC-001 ignition vector' },
+  ];
+  const loop = [...items, ...items];
+  return (
+    <div className="pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 panel rounded-full pl-2 pr-3 py-1 max-w-[58%] overflow-hidden">
+      <span className="shrink-0 font-mono-ui text-[8px] uppercase tracking-[0.18em] text-primary px-2 py-0.5 rounded-full bg-primary/10 ring-1 ring-primary/30 flex items-center gap-1">
+        <span className="h-1.5 w-1.5 rounded-full bg-sev-ok pulse-dot" /> ALERTS
+      </span>
+      <div className="flex-1 overflow-hidden whitespace-nowrap">
+        <div className="inline-block animate-[ticker_45s_linear_infinite]">
+          {loop.map((i, idx) => (
+            <span key={idx} className="font-mono-ui text-[10px] mx-4 tracking-[0.04em]">
+              <span className={`text-${i.c}`}>●</span> <span className="text-foreground/80">{i.t}</span>
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+//  NOTICE TIMELINE — multi-defect Gantt
+// ────────────────────────────────────────────────────────────
+function NoticeTimeline() {
+  // span: earliest report to today, in days
+  const today = new Date('2024-03-15').getTime();
+  const dates = DEFECTS.map((d) => new Date(d.reported).getTime());
+  const earliest = Math.min(...dates);
+  const totalDays = Math.ceil((today - earliest) / 86400000);
+  return (
+    <div className="space-y-1">
+      {DEFECTS.map((d) => {
+        const start = ((new Date(d.reported).getTime() - earliest) / 86400000 / totalDays) * 100;
+        const width = (d.gap / totalDays) * 100;
+        return (
+          <div key={d.id} className="grid grid-cols-[58px_1fr_36px] items-center gap-2 text-[8px]">
+            <span className="font-mono-ui truncate" style={{ color: d.color }}>{d.id}</span>
+            <div className="relative h-3 rounded-sm bg-surface-2 overflow-hidden ring-1 ring-border/40">
+              <div
+                className="absolute top-0 bottom-0 rounded-sm"
+                style={{
+                  left: start + '%',
+                  width: width + '%',
+                  background: `linear-gradient(90deg, ${d.color}cc, ${d.color}40)`,
+                  boxShadow: `0 0 6px ${d.color}80`,
+                }}
+              />
+              <div className="absolute top-0 bottom-0 w-px bg-primary/60" style={{ left: start + '%' }} />
+            </div>
+            <span className="font-mono-ui text-right text-muted-foreground/80">{d.gap}d</span>
+          </div>
+        );
+      })}
+      <div className="grid grid-cols-[58px_1fr_36px] gap-2 mt-1">
+        <span />
+        <div className="flex justify-between font-mono-ui text-[7px] text-muted-foreground/60 tracking-[0.06em]">
+          <span>{new Date(earliest).toISOString().slice(0, 7)}</span>
+          <span>· today ·</span>
+          <span>2024-03</span>
+        </div>
+        <span />
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+//  HABITABILITY RADAR — composite index by domain
+// ────────────────────────────────────────────────────────────
+function HabitabilityRadar() {
+  const data = [
+    { domain: 'Air',        score: 18, target: 100 },
+    { domain: 'Water',      score: 22, target: 100 },
+    { domain: 'Thermal',    score: 30, target: 100 },
+    { domain: 'Structural', score: 48, target: 100 },
+    { domain: 'Toxics',     score: 8,  target: 100 },
+    { domain: 'Electrical', score: 26, target: 100 },
+    { domain: 'Sanitation', score: 14, target: 100 },
+    { domain: 'Life Safety',score: 6,  target: 100 },
+  ];
+  return (
+    <div className="h-[200px] -mx-2">
+      <ResponsiveContainer>
+        <RadarChart data={data} outerRadius="78%">
+          <PolarGrid stroke="hsl(var(--border))" />
+          <PolarAngleAxis dataKey="domain" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 8, fontFamily: 'var(--font-mono)' }} />
+          <Radar name="Code minimum" dataKey="target" stroke="hsl(var(--accent))" fill="hsl(var(--accent))" fillOpacity={0.05} strokeDasharray="3 3" />
+          <Radar name="Unit 4B" dataKey="score" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.35} />
+          <Tooltip contentStyle={{ background: 'hsl(var(--surface-1))', border: '1px solid hsl(var(--border))', fontSize: 10 }} />
+        </RadarChart>
+      </ResponsiveContainer>
     </div>
   );
 }
