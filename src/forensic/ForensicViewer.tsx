@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DEFECTS, TYPE_COLORS, type Defect } from './data';
 import { useForensicScene, type LayerKey, type ViewMode } from './useForensicScene';
-import { Area, AreaChart, Bar, BarChart, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, Bar, BarChart, Cell, Pie, PieChart, PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import forensicSeal from '@/assets/forensic-seal.png';
 import confidentialStamp from '@/assets/evidence-stamp.png';
+import blueprintOverlay from '@/assets/blueprint-overlay.png';
 
 const TOTAL_DAMAGES = DEFECTS.reduce((acc, d) => acc + Number(d.dmg.replace(/[^0-9.]/g, '')) || 0, 0);
 const HAZARD_COUNT = DEFECTS.filter((d) => d.sevCls === 'si').length;
@@ -204,6 +205,20 @@ export default function ForensicViewer() {
             className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] max-w-[55%] opacity-[0.05] mix-blend-screen z-[2] select-none"
             loading="lazy"
           />
+
+          {/* Blueprint isometric overlay (top-right corner) */}
+          <img
+            src={blueprintOverlay}
+            alt=""
+            aria-hidden
+            width={1024}
+            height={1024}
+            className="pointer-events-none absolute right-3 bottom-32 w-[260px] opacity-[0.18] mix-blend-screen z-[2] select-none rotate-[2deg]"
+            loading="lazy"
+          />
+
+          {/* Top-center alerts ticker */}
+          <AlertsTicker />
 
           {/* Top-left HUD */}
           <div className="pointer-events-none absolute left-4 top-4 z-10 flex flex-col gap-1.5">
